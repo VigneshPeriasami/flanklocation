@@ -1,0 +1,9 @@
+<manifest
+    package="com.github.vignesh_iopex.flanklocation"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <service android:name=".LocationService"/>
+    </application>
+
+</manifest>

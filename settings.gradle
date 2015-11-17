@@ -1,0 +1,2 @@
+include ':flanklocation'
+rootProject.name = "flank-parent"
