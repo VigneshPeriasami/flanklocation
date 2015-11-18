@@ -18,15 +18,44 @@ package com.github.vignesh_iopex.flanklocation;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.location.Location;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.location.FusedLocationProviderApi;
+
+import static com.google.android.gms.location.FusedLocationProviderApi.KEY_LOCATION_CHANGED;
 
 public abstract class FlankService extends IntentService {
+  private static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
+  private Intent intent;
 
   public FlankService(String name) {
     super(name);
   }
 
-  @Override protected void onHandleIntent(Intent intent) {
-
+  static Intent getFailureAsExtras(ConnectionResult connectionResult) {
+    Intent failureExtras = new Intent();
+    failureExtras.putExtra(EXTRAS_CONNECTION_RESULT, connectionResult);
+    return failureExtras;
   }
 
+  @Override protected final void onHandleIntent(Intent intent) {
+    this.intent = intent;
+    ConnectionResult connectionResult = intent.getParcelableExtra(EXTRAS_CONNECTION_RESULT);
+    if (connectionResult != null) {
+      onConnectionError(connectionResult);
+      return;
+    }
+
+    Location location = intent.getParcelableExtra(KEY_LOCATION_CHANGED);
+    onNextLocation(location);
+  }
+
+  protected Intent getIntent() {
+    return intent;
+  }
+
+  protected abstract void onConnectionError(ConnectionResult connectionResult);
+
+  protected abstract void onNextLocation(Location location);
 }

@@ -58,7 +58,7 @@ final class DefaultLocationAdapter implements LocationAdapter {
 
   private LocationApiAdapter failure = new LocationApiAdapter() {
     private Intent getFailureExtras() {
-      return null;
+      return FlankService.getFailureAsExtras(connectionResult);
     }
 
     private void sendFailure(PendingIntent callback) {
