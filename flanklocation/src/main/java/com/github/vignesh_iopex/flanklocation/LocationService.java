@@ -16,36 +16,27 @@
  */
 package com.github.vignesh_iopex.flanklocation;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-public final class LocationService extends Service {
+public final class LocationService extends IntentService {
   static final String EXTRA_FLANK = "extra_flank";
   private LocationAdapter locationAdapter;
 
-  @Override public void onCreate() {
-    synchronized (this) {
-      if (locationAdapter == null) {
-        locationAdapter = new DefaultLocationAdapter(this);
-        locationAdapter.open();
-      }
-    }
-    super.onCreate();
+  public LocationService() {
+    super("FlankLocationService");
   }
 
-  @Override public int onStartCommand(Intent intent, int flags, int startId) {
+  @Override protected void onHandleIntent(Intent intent) {
+    if (locationAdapter == null)
+      locationAdapter = new DefaultLocationAdapter(this);
+    if (!locationAdapter.isConnected())
+      locationAdapter.connect();
+
     Flank flank = intent.getParcelableExtra(EXTRA_FLANK);
-    if (flank == null)
-      return super.onStartCommand(intent, flags, startId);
-    locationAdapter.processFlankWhenReady(flank);
-    return START_STICKY;
-  }
-
-  @Nullable
-  @Override
-  public IBinder onBind(Intent intent) {
-    return null;
+    locationAdapter.processFlank(flank);
   }
 }

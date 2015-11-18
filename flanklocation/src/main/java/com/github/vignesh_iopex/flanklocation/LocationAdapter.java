@@ -17,11 +17,11 @@
 package com.github.vignesh_iopex.flanklocation;
 
 interface LocationAdapter {
-  void open();
+  void connect();
 
-  boolean isReady();
+  boolean isConnected();
 
-  void processFlankWhenReady(Flank flank);
+  void processFlank(Flank flank);
 
-  void close();
+  void disconnect();
 }

@@ -20,8 +20,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,84 +28,94 @@ import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.LinkedList;
-
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
-class DefaultLocationAdapter implements LocationAdapter,
-    GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener, LocationApiAdapter {
+final class DefaultLocationAdapter implements LocationAdapter {
   private final Context context;
-  private GoogleApiClient mGoogleApiClient;
-  private final LinkedList<Flank> pendingQueues = new LinkedList<>();
+  private final GoogleApiClient mGoogleApiClient;
+  private ConnectionResult connectionResult;
+
+  private LocationApiAdapter success = new LocationApiAdapter() {
+    @Override public void requestUpdates(LocationRequest locationRequest, PendingIntent callback) {
+      FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, callback);
+    }
+
+    @Override public void stopUpdates(PendingIntent callback) {
+      FusedLocationApi.removeLocationUpdates(mGoogleApiClient, callback);
+    }
+
+    @Override public void sendLastKnownLocation(PendingIntent callback) {
+      Location location = FusedLocationApi.getLastLocation(mGoogleApiClient);
+      Intent locationExtras = new Intent();
+      locationExtras.putExtra(FusedLocationProviderApi.KEY_LOCATION_CHANGED, location);
+      try {
+        callback.send(context, Flank.TYPE_FORCE_ONE, locationExtras);
+      } catch (PendingIntent.CanceledException e) {
+        e.printStackTrace();
+      }
+    }
+  };
+
+  private LocationApiAdapter failure = new LocationApiAdapter() {
+    private Intent getFailureExtras() {
+      return null;
+    }
+
+    private void sendFailure(PendingIntent callback) {
+      try {
+        callback.send(context, -1, getFailureExtras());
+      } catch (PendingIntent.CanceledException e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override public void requestUpdates(LocationRequest locationRequest, PendingIntent callback) {
+      sendFailure(callback);
+    }
+
+    @Override public void stopUpdates(PendingIntent pendingIntent) {
+      sendFailure(pendingIntent);
+    }
+
+    @Override public void sendLastKnownLocation(PendingIntent pendingIntent) {
+      sendFailure(pendingIntent);
+    }
+  };
 
   DefaultLocationAdapter(Context context) {
-    this.context = context;
-    mGoogleApiClient = new GoogleApiClient.Builder(context)
-        .addConnectionCallbacks(this)
-        .addOnConnectionFailedListener(this)
+    this(context, new GoogleApiClient.Builder(context)
         .addApi(LocationServices.API)
-        .build();
+        .build());
   }
 
-  @Override public void open() {
-    mGoogleApiClient.connect();
+  @VisibleForTesting DefaultLocationAdapter(Context context, GoogleApiClient googleApiClient) {
+    this.context = context;
+    this.mGoogleApiClient = googleApiClient;
   }
 
-  @Override public boolean isReady() {
+  @Override public void connect() {
+    connectionResult = mGoogleApiClient.blockingConnect();
+  }
+
+  @Override public boolean isConnected() {
     return mGoogleApiClient.isConnected();
   }
 
-  @Override public void processFlankWhenReady(@NonNull Flank flank) {
-    if (!isReady() && mGoogleApiClient.isConnecting()) {
-      synchronized (pendingQueues) {
-        pendingQueues.add(flank);
-      }
-      return;
-    }
-    flank.onLocationApiReady(this);
+  private void assertConnection() {
+    if (connectionResult == null)
+      throw new IllegalStateException("Location adapter is not connected, call connect");
   }
 
-  private void processPendingQueues() {
-    synchronized (pendingQueues) {
-      for (Flank flank : pendingQueues) {
-        flank.onLocationApiReady(this);
-      }
+  @Override public void processFlank(Flank flank) {
+    assertConnection();
+    if (connectionResult.isSuccess()) {
+      flank.onLocationApiReady(success);
+    } else {
+      flank.onLocationApiReady(failure);
     }
   }
 
-  @Override public void close() {
+  @Override public void disconnect() {
     mGoogleApiClient.disconnect();
-  }
-
-  @Override public void onConnected(Bundle bundle) {
-    processPendingQueues();
-  }
-
-  @Override public void onConnectionSuspended(int i) {
-    // pending
-  }
-
-  @Override public void onConnectionFailed(ConnectionResult connectionResult) {
-    // pending
-  }
-
-  @Override public void requestUpdates(LocationRequest locationRequest, PendingIntent callback) {
-    FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, callback);
-  }
-
-  @Override public void stopUpdates(PendingIntent callback) {
-    FusedLocationApi.removeLocationUpdates(mGoogleApiClient, callback);
-  }
-
-  @Override public void sendLastKnownLocation(PendingIntent callback) {
-    Location location = FusedLocationApi.getLastLocation(mGoogleApiClient);
-    Intent locationExtras = new Intent();
-    locationExtras.putExtra(FusedLocationProviderApi.KEY_LOCATION_CHANGED, location);
-    try {
-      callback.send(context, Flank.TYPE_FORCE_ONE, locationExtras);
-    } catch (PendingIntent.CanceledException e) {
-      e.printStackTrace();
-    }
   }
 }
