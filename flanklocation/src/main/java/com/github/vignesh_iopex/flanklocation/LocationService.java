@@ -17,10 +17,7 @@
 package com.github.vignesh_iopex.flanklocation;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Intent;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 
 public final class LocationService extends IntentService {
   static final String EXTRA_FLANK = "extra_flank";
@@ -38,5 +35,11 @@ public final class LocationService extends IntentService {
 
     Flank flank = intent.getParcelableExtra(EXTRA_FLANK);
     locationAdapter.processFlank(flank);
+  }
+
+  @Override public void onDestroy() {
+    if (locationAdapter != null)
+      locationAdapter.disconnect();
+    super.onDestroy();
   }
 }

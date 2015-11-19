@@ -35,7 +35,7 @@ final class DefaultLocationAdapter implements LocationAdapter {
   private final GoogleApiClient mGoogleApiClient;
   private ConnectionResult connectionResult;
 
-  private LocationApiAdapter success = new LocationApiAdapter() {
+  private LocationRequestor success = new LocationRequestor() {
     @Override public void requestUpdates(LocationRequest locationRequest, PendingIntent callback) {
       FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, callback);
     }
@@ -56,9 +56,9 @@ final class DefaultLocationAdapter implements LocationAdapter {
     }
   };
 
-  private LocationApiAdapter failure = new LocationApiAdapter() {
+  private LocationRequestor failure = new LocationRequestor() {
     private Intent getFailureExtras() {
-      return FlankService.getFailureAsExtras(connectionResult);
+      return FlankTask.getFailureAsExtras(connectionResult);
     }
 
     private void sendFailure(PendingIntent callback) {

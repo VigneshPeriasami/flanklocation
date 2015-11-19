@@ -1,2 +1,2 @@
-include ':flanklocation'
+include ':flanklocation', ':example'
 rootProject.name = "flank-parent"

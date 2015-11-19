@@ -20,7 +20,7 @@ import android.app.PendingIntent;
 
 import com.google.android.gms.location.LocationRequest;
 
-interface LocationApiAdapter {
+interface LocationRequestor {
   void requestUpdates(LocationRequest locationRequest, PendingIntent callback);
 
   void stopUpdates(PendingIntent pendingIntent);

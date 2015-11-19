@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.location.LocationRequest;
 
@@ -42,7 +44,7 @@ public final class Flank implements Parcelable {
   private Flank(Parcel source) {
     this.locationRequest = source.readParcelable(Flank.class.getClassLoader());
     this.callback = source.readParcelable(Flank.class.getClassLoader());
-    this.updateType = source.readParcelable(Flank.class.getClassLoader());
+    this.updateType = source.readInt();
   }
 
   @Override public void writeToParcel(Parcel parcel, int i) {
@@ -55,7 +57,7 @@ public final class Flank implements Parcelable {
     return 0;
   }
 
-  void onLocationApiReady(LocationApiAdapter locationApi) {
+  void onLocationApiReady(LocationRequestor locationApi) {
     if (TYPE_FORCE_ONE == updateType) {
       locationApi.sendLastKnownLocation(callback);
     } else if (TYPE_PERIODIC == updateType) {
@@ -80,7 +82,10 @@ public final class Flank implements Parcelable {
     private int updateType;
     private PendingIntent pendingIntent;
 
-    public Builder setRequest(LocationRequest locationRequest) {
+    /**
+     * LocationRequest is only required for periodic updates.
+     */
+    public Builder setRequest(@Nullable LocationRequest locationRequest) {
       this.locationRequest = locationRequest;
       return this;
     }
@@ -102,18 +107,22 @@ public final class Flank implements Parcelable {
       return this;
     }
 
+    /**
+     * stop the location updates for the PendingIntent which has been used as callback in
+     * periodic updates request.
+     */
     public Builder stop() {
       updateType = TYPE_STOP;
       return this;
     }
 
-    /** Use {@link FlankService} for clean callback api methods. */
-    public Builder setCallbackPendingIntent(PendingIntent pendingIntent) {
+    /** Use {@link FlankTask} for clean callback api methods. */
+    public Builder callback(@NonNull PendingIntent pendingIntent) {
       this.pendingIntent = pendingIntent;
       return this;
     }
 
-    public void flank(Context context) {
+    public void flank(@NonNull Context context) {
       Flank flank = new Flank(locationRequest, pendingIntent, updateType);
       Intent intent = new Intent(context, LocationService.class);
       intent.putExtra(LocationService.EXTRA_FLANK, flank);

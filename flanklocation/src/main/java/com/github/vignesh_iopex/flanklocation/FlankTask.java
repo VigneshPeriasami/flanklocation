@@ -19,17 +19,17 @@ package com.github.vignesh_iopex.flanklocation;
 import android.app.IntentService;
 import android.content.Intent;
 import android.location.Location;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.location.FusedLocationProviderApi;
 
 import static com.google.android.gms.location.FusedLocationProviderApi.KEY_LOCATION_CHANGED;
 
-public abstract class FlankService extends IntentService {
+public abstract class FlankTask extends IntentService {
   private static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
   private Intent intent;
 
-  public FlankService(String name) {
+  public FlankTask(String name) {
     super(name);
   }
 
@@ -55,7 +55,7 @@ public abstract class FlankService extends IntentService {
     return intent;
   }
 
-  protected abstract void onConnectionError(ConnectionResult connectionResult);
+  protected abstract void onConnectionError(@Nullable ConnectionResult connectionResult);
 
-  protected abstract void onNextLocation(Location location);
+  protected abstract void onNextLocation(@Nullable Location location);
 }

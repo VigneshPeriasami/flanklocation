@@ -7,13 +7,14 @@ buildscript {
     }
 }
 
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion parent.ext.compileSdkVersion
     buildToolsVersion parent.ext.buildToolsVersion
 
     defaultConfig {
+        applicationId "com.github.vignesh_iopex.example"
         minSdkVersion parent.ext.minSdkVersion
         targetSdkVersion parent.ext.targetSdkVersion
         versionCode 1
@@ -29,11 +30,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    provided libraries.androidV7Support
-    compile libraries.googlePlayLocationServices
+    compile libraries.androidV7Support
+    compile libraries.butterknife
+    compile project(':flanklocation')
 
     testCompile libraries.junit
 }
-
-apply from: rootProject.file('gradlescripts/libcheckstyle.gradle')
-apply from: rootProject.file('gradlescripts/maven-push.gradle')
