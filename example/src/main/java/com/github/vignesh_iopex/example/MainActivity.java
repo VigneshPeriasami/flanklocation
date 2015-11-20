@@ -33,14 +33,10 @@ public class MainActivity extends Activity {
   }
 
   @OnClick(R.id.btn_locate) void locateMe() {
-    Flank.Builder flankBuilder = new Flank.Builder();
-    flankBuilder.setRequest(getLocationRequest())
-        .periodic()
-        .callback(getLocationTaskIntent()).flank(this);
+    Flank.using(this).start(BgTask.class);
   }
 
   @OnClick(R.id.btn_stop) void stopUpdates() {
-    Flank.Builder flankBuilder = new Flank.Builder();
-    flankBuilder.callback(getLocationTaskIntent()).stop().flank(this);
+    Flank.using(this).stop(BgTask.class);
   }
 }

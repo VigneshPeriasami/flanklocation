@@ -49,7 +49,7 @@ final class DefaultLocationAdapter implements LocationAdapter {
       Intent locationExtras = new Intent();
       locationExtras.putExtra(FusedLocationProviderApi.KEY_LOCATION_CHANGED, location);
       try {
-        callback.send(context, Flank.TYPE_FORCE_ONE, locationExtras);
+        callback.send(context, 0, locationExtras);
       } catch (PendingIntent.CanceledException e) {
         e.printStackTrace();
       }
@@ -106,7 +106,7 @@ final class DefaultLocationAdapter implements LocationAdapter {
       throw new IllegalStateException("Location adapter is not connected, call connect");
   }
 
-  @Override public void processFlank(Flank flank) {
+  @Override public void applyAction(RequestorAction flank) {
     assertConnection();
     if (connectionResult.isSuccess()) {
       flank.onLocationApiReady(success);

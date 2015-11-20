@@ -19,114 +19,53 @@ package com.github.vignesh_iopex.flanklocation;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.google.android.gms.location.LocationRequest;
+import java.util.LinkedList;
+import java.util.List;
 
-public final class Flank implements Parcelable {
-  static final int TYPE_FORCE_ONE = 1;
-  static final int TYPE_PERIODIC = 2;
-  static final int TYPE_STOP = 0;
+public final class Flank {
+  private static final List<RequestorAction> ACTION_LIST = new LinkedList<>();
+  private final Context context;
+  private final RequestParserFactory requestParserFactory;
 
-  private final LocationRequest locationRequest;
-  private final PendingIntent callback;
-  private final int updateType;
-
-  Flank(LocationRequest locationRequest, PendingIntent callback, int updateType) {
-    this.locationRequest = locationRequest;
-    this.callback = callback;
-    this.updateType = updateType;
+  private Flank(Context context) {
+    this(context, new DefaultParserFactory());
   }
 
-  private Flank(Parcel source) {
-    this.locationRequest = source.readParcelable(Flank.class.getClassLoader());
-    this.callback = source.readParcelable(Flank.class.getClassLoader());
-    this.updateType = source.readInt();
+  Flank(Context context, RequestParserFactory requestParserFactory) {
+    this.context = context;
+    this.requestParserFactory = requestParserFactory;
   }
 
-  @Override public void writeToParcel(Parcel parcel, int i) {
-    parcel.writeParcelable(locationRequest, i);
-    parcel.writeParcelable(callback, i);
-    parcel.writeInt(updateType);
+  public static Flank using(Context context) {
+    return new Flank(context);
   }
 
-  @Override public int describeContents() {
-    return 0;
+  public void start(Class<? extends FlankTask> clsFlank) {
+    pushAndStart(requestParserFactory.forStart(context, clsFlank));
   }
 
-  void onLocationApiReady(LocationRequestor locationApi) {
-    if (TYPE_FORCE_ONE == updateType) {
-      locationApi.sendLastKnownLocation(callback);
-    } else if (TYPE_PERIODIC == updateType) {
-      locationApi.requestUpdates(locationRequest, callback);
-    } else {
-      locationApi.stopUpdates(callback);
-    }
+  public void start(Class<? extends FlankTask> clsFlank, PendingIntent callback) {
+    pushAndStart(requestParserFactory.forStart(clsFlank, callback));
   }
 
-  public static final Creator<Flank> CREATOR = new Creator<Flank>() {
-    @Override public Flank createFromParcel(Parcel parcel) {
-      return new Flank(parcel);
+  public void stop(Class<? extends FlankTask> clsFlank) {
+    pushAndStart(requestParserFactory.forStop(context, clsFlank));
+  }
+
+  private void pushAndStart(RequestorAction requestorAction) {
+    synchronized (ACTION_LIST) {
+      ACTION_LIST.add(requestorAction);
     }
+    context.startService(new Intent(context, ApiConnector.class));
+  }
 
-    @Override public Flank[] newArray(int i) {
-      return new Flank[i];
-    }
-  };
-
-  public static class Builder {
-    private LocationRequest locationRequest;
-    private int updateType;
-    private PendingIntent pendingIntent;
-
-    /**
-     * LocationRequest is only required for periodic updates.
-     */
-    public Builder setRequest(@Nullable LocationRequest locationRequest) {
-      this.locationRequest = locationRequest;
-      return this;
-    }
-
-    /**
-     * Get one shot update (FORCED)
-     * LocationRequest is not required to get an one shot update
-     */
-    public Builder oneShot() {
-      updateType = TYPE_FORCE_ONE;
-      return this;
-    }
-
-    /**
-     * Uses {@link LocationRequest} from {@link #setRequest(LocationRequest)} to get updates
-     */
-    public Builder periodic() {
-      updateType = TYPE_PERIODIC;
-      return this;
-    }
-
-    /**
-     * stop the location updates for the PendingIntent which has been used as callback in
-     * periodic updates request.
-     */
-    public Builder stop() {
-      updateType = TYPE_STOP;
-      return this;
-    }
-
-    /** Use {@link FlankTask} for clean callback api methods. */
-    public Builder callback(@NonNull PendingIntent pendingIntent) {
-      this.pendingIntent = pendingIntent;
-      return this;
-    }
-
-    public void flank(@NonNull Context context) {
-      Flank flank = new Flank(locationRequest, pendingIntent, updateType);
-      Intent intent = new Intent(context, LocationService.class);
-      intent.putExtra(LocationService.EXTRA_FLANK, flank);
-      context.startService(intent);
+  static void informAllRequestors(LocationAdapter locationAdapter) {
+    synchronized (ACTION_LIST) {
+      for (RequestorAction requestorAction : ACTION_LIST) {
+        locationAdapter.applyAction(requestorAction);
+      }
+      ACTION_LIST.clear();
     }
   }
 }

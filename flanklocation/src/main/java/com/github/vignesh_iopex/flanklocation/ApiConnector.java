@@ -19,11 +19,10 @@ package com.github.vignesh_iopex.flanklocation;
 import android.app.IntentService;
 import android.content.Intent;
 
-public final class LocationService extends IntentService {
-  static final String EXTRA_FLANK = "extra_flank";
+public final class ApiConnector extends IntentService {
   private LocationAdapter locationAdapter;
 
-  public LocationService() {
+  public ApiConnector() {
     super("FlankLocationService");
   }
 
@@ -32,9 +31,7 @@ public final class LocationService extends IntentService {
       locationAdapter = new DefaultLocationAdapter(this);
     if (!locationAdapter.isConnected())
       locationAdapter.connect();
-
-    Flank flank = intent.getParcelableExtra(EXTRA_FLANK);
-    locationAdapter.processFlank(flank);
+    Flank.informAllRequestors(locationAdapter);
   }
 
   @Override public void onDestroy() {

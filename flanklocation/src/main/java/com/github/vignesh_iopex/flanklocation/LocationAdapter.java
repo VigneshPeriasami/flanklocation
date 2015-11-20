@@ -21,7 +21,7 @@ interface LocationAdapter {
 
   boolean isConnected();
 
-  void processFlank(Flank flank);
+  void applyAction(RequestorAction requestorAction);
 
   void disconnect();
 }
