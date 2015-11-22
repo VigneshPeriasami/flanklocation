@@ -19,53 +19,54 @@ package com.github.vignesh_iopex.flanklocation;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.VisibleForTesting;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.google.android.gms.location.LocationRequest;
+
+import static com.github.vignesh_iopex.flanklocation.ActionQueue.DEFAULT_QUEUE;
 
 public final class Flank {
-  private static final List<RequestorAction> ACTION_LIST = new LinkedList<>();
   private final Context context;
-  private final RequestParserFactory requestParserFactory;
+  private final RequestorActionFactory requestorActionFactory;
+  private final ActionQueue actionQueue;
 
   private Flank(Context context) {
-    this(context, new DefaultParserFactory());
+    this(context, new DefaultActionFactory(), DEFAULT_QUEUE);
   }
 
-  Flank(Context context, RequestParserFactory requestParserFactory) {
+  @VisibleForTesting Flank(Context context, RequestorActionFactory requestorActionFactory,
+                           ActionQueue actionQueue) {
     this.context = context;
-    this.requestParserFactory = requestParserFactory;
+    this.requestorActionFactory = requestorActionFactory;
+    this.actionQueue = actionQueue;
   }
 
   public static Flank using(Context context) {
     return new Flank(context);
   }
 
+  public void startPeriodic(PendingIntent pendingIntent, LocationRequest locationRequest) {
+
+  }
+
+  public void startOneShot(PendingIntent pendingIntent) {
+
+  }
+
   public void start(Class<? extends FlankTask> clsFlank) {
-    pushAndStart(requestParserFactory.forStart(context, clsFlank));
+    addToQueue(context, requestorActionFactory.forStart(context, clsFlank));
   }
 
   public void start(Class<? extends FlankTask> clsFlank, PendingIntent callback) {
-    pushAndStart(requestParserFactory.forStart(clsFlank, callback));
+    addToQueue(context, requestorActionFactory.forStart(clsFlank, callback));
   }
 
   public void stop(Class<? extends FlankTask> clsFlank) {
-    pushAndStart(requestParserFactory.forStop(context, clsFlank));
+    addToQueue(context, requestorActionFactory.forStop(context, clsFlank));
   }
 
-  private void pushAndStart(RequestorAction requestorAction) {
-    synchronized (ACTION_LIST) {
-      ACTION_LIST.add(requestorAction);
-    }
+  private void addToQueue(Context context, RequestorAction action) {
+    actionQueue.enqueue(action);
     context.startService(new Intent(context, ApiConnector.class));
-  }
-
-  static void informAllRequestors(LocationAdapter locationAdapter) {
-    synchronized (ACTION_LIST) {
-      for (RequestorAction requestorAction : ACTION_LIST) {
-        locationAdapter.applyAction(requestorAction);
-      }
-      ACTION_LIST.clear();
-    }
   }
 }

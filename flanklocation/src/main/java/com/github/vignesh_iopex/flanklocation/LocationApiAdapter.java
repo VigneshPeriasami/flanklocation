@@ -14,20 +14,16 @@
  * limitations under the License.
  *
  */
-package com.github.vignesh_iopex.flanklocation.annotations;
+package com.github.vignesh_iopex.flanklocation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import android.app.PendingIntent;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import com.google.android.gms.location.LocationRequest;
 
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Periodic {
-  int interval();
+interface LocationApiAdapter {
+  void requestUpdates(LocationRequest locationRequest, PendingIntent callback);
 
-  int priority();
+  void stopUpdates(PendingIntent pendingIntent);
 
-  int fastestInterval();
+  void sendLastKnownLocation(PendingIntent pendingIntent);
 }

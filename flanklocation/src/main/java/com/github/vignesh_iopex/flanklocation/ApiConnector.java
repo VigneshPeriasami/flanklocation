@@ -18,12 +18,19 @@ package com.github.vignesh_iopex.flanklocation;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.annotation.VisibleForTesting;
 
 public final class ApiConnector extends IntentService {
+  private final ActionQueue actionQueue;
   private LocationAdapter locationAdapter;
 
   public ApiConnector() {
-    super("FlankLocationService");
+    this("FlankLocationService", ActionQueue.DEFAULT_QUEUE);
+  }
+
+  @VisibleForTesting ApiConnector(String name, ActionQueue actionQueue) {
+    super(name);
+    this.actionQueue = actionQueue;
   }
 
   @Override protected void onHandleIntent(Intent intent) {
@@ -31,7 +38,7 @@ public final class ApiConnector extends IntentService {
       locationAdapter = new DefaultLocationAdapter(this);
     if (!locationAdapter.isConnected())
       locationAdapter.connect();
-    Flank.informAllRequestors(locationAdapter);
+    actionQueue.informAll(locationAdapter);
   }
 
   @Override public void onDestroy() {
