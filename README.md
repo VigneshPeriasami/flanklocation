@@ -3,6 +3,26 @@ Flank Location
 Android location api wrapper. Using `FlankService` as a callback PendingIntent would
 give clean access to Google location API locations and errors.
 
+Usage
+---------
+
+```java
+@FlankLocation(interval = 3000, fastestInterval = 2000, priority = PRIORITY_HIGH_ACCURACY)
+public class ReconExample extends ReconTask {
+  public ReconExample() {
+    super("ExampleRecon");
+  }
+
+  protected onNextLocation(LocationResult locationResult) {
+    // do something with location result
+  }
+
+  protected onConnectionError(ConnectionResult connectionResult) {
+    // check if it is resolvable.
+  }
+}
+```
+
 **Note:** This library is not ready for production use it at your own risk.
 
 Download
