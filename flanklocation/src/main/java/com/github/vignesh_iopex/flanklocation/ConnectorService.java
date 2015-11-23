@@ -18,28 +18,32 @@ package com.github.vignesh_iopex.flanklocation;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.annotation.VisibleForTesting;
 
-public final class LocationService extends IntentService {
-  static final String EXTRA_FLANK = "extra_flank";
-  private LocationAdapter locationAdapter;
+public final class ConnectorService extends IntentService {
+  private final ActionQueue actionQueue;
+  private PlayServiceAdapter playServiceAdapter;
 
-  public LocationService() {
-    super("FlankLocationService");
+  public ConnectorService() {
+    this("FlankLocationService", ActionQueue.DEFAULT_QUEUE);
+  }
+
+  @VisibleForTesting ConnectorService(String name, ActionQueue actionQueue) {
+    super(name);
+    this.actionQueue = actionQueue;
   }
 
   @Override protected void onHandleIntent(Intent intent) {
-    if (locationAdapter == null)
-      locationAdapter = new DefaultLocationAdapter(this);
-    if (!locationAdapter.isConnected())
-      locationAdapter.connect();
-
-    Flank flank = intent.getParcelableExtra(EXTRA_FLANK);
-    locationAdapter.processFlank(flank);
+    if (playServiceAdapter == null)
+      playServiceAdapter = new DefaultPlayServiceAdapter(this);
+    if (!playServiceAdapter.isConnected())
+      playServiceAdapter.connect();
+    actionQueue.informAll(playServiceAdapter);
   }
 
   @Override public void onDestroy() {
-    if (locationAdapter != null)
-      locationAdapter.disconnect();
+    if (playServiceAdapter != null)
+      playServiceAdapter.disconnect();
     super.onDestroy();
   }
 }

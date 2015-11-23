@@ -9,6 +9,10 @@ buildscript {
 
 apply plugin: 'com.android.library'
 
+repositories {
+    mavenCentral()
+}
+
 android {
     compileSdkVersion parent.ext.compileSdkVersion
     buildToolsVersion parent.ext.buildToolsVersion
@@ -33,7 +37,11 @@ dependencies {
     compile libraries.googlePlayLocationServices
 
     testCompile libraries.junit
+    testCompile libraries.robolectric
+    testCompile libraries.googleTruth
+    testCompile libraries.mockito
 }
 
 apply from: rootProject.file('gradlescripts/libcheckstyle.gradle')
 apply from: rootProject.file('gradlescripts/maven-push.gradle')
+apply from: rootProject.file('gradlescripts/androidtestopts.gradle')

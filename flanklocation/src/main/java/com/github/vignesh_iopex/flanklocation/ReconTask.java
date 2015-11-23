@@ -22,14 +22,22 @@ import android.location.Location;
 import android.support.annotation.Nullable;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationResult;
+
+import java.util.Collections;
 
 import static com.google.android.gms.location.FusedLocationProviderApi.KEY_LOCATION_CHANGED;
+import static com.google.android.gms.location.LocationAvailability.extractLocationAvailability;
 
-public abstract class FlankTask extends IntentService {
-  private static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
+/**
+ * Use this class to cleanly listen to the location updates.
+ */
+public abstract class ReconTask extends IntentService {
+  static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
   private Intent intent;
 
-  public FlankTask(String name) {
+  public ReconTask(String name) {
     super(name);
   }
 
@@ -47,15 +55,31 @@ public abstract class FlankTask extends IntentService {
       return;
     }
 
+    LocationAvailability locationAvailability = extractLocationAvailability(intent);
     Location location = intent.getParcelableExtra(KEY_LOCATION_CHANGED);
-    onNextLocation(location);
+
+    if (locationAvailability != null && locationAvailability.isLocationAvailable()) {
+      onNextLocation(LocationResult.extractResult(intent));
+    } else if (location != null) {
+      onNextLocation(LocationResult.create(Collections.singletonList(location)));
+    } else {
+      onNextLocation(null);
+    }
   }
 
+  /**
+   * Gets the raw intent received on {@link IntentService#onHandleIntent(Intent)}
+   */
   protected Intent getIntent() {
     return intent;
   }
 
+  /**
+   * Called if play services are having trouble connecting
+   *
+   * @param connectionResult result from the connection failure from play services
+   */
   protected abstract void onConnectionError(@Nullable ConnectionResult connectionResult);
 
-  protected abstract void onNextLocation(@Nullable Location location);
+  protected abstract void onNextLocation(@Nullable LocationResult locationResult);
 }

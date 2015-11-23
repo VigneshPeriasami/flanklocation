@@ -16,14 +16,12 @@
  */
 package com.github.vignesh_iopex.flanklocation;
 
-import android.app.PendingIntent;
+interface PlayServiceAdapter {
+  void connect();
 
-import com.google.android.gms.location.LocationRequest;
+  boolean isConnected();
 
-interface LocationRequestor {
-  void requestUpdates(LocationRequest locationRequest, PendingIntent callback);
+  void applyAction(RequestorAction requestorAction);
 
-  void stopUpdates(PendingIntent pendingIntent);
-
-  void sendLastKnownLocation(PendingIntent pendingIntent);
+  void disconnect();
 }
