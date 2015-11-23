@@ -18,6 +18,11 @@ public class ReconExample extends ReconTask {
     Recon.using(context).start(ReconExample.class);
   }
 
+  /** stops listening to location updates */
+  public static void stop(Context context) {
+    Recon.using(context).stop(ReconExample.class);
+  }
+
   protected onNextLocation(LocationResult locationResult) {
     // do something with location result
   }
@@ -29,7 +34,7 @@ public class ReconExample extends ReconTask {
 ```
 
 
-**Note:** This library is not ready for production use it at your own risk.
+**Note:** This library is still experimental hence could undergo major design changes.
 
 Download
 --------
