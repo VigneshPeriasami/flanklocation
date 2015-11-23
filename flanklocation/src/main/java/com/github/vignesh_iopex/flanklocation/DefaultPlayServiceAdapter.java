@@ -30,7 +30,7 @@ import com.google.android.gms.location.LocationServices;
 
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
-final class DefaultLocationAdapter implements LocationAdapter {
+final class DefaultPlayServiceAdapter implements PlayServiceAdapter {
   private final Context context;
   private final GoogleApiClient mGoogleApiClient;
   private ConnectionResult connectionResult;
@@ -58,7 +58,7 @@ final class DefaultLocationAdapter implements LocationAdapter {
 
   private LocationApiAdapter failure = new LocationApiAdapter() {
     private Intent getFailureExtras() {
-      return FlankTask.getFailureAsExtras(connectionResult);
+      return ReconTask.getFailureAsExtras(connectionResult);
     }
 
     private void sendFailure(PendingIntent callback) {
@@ -82,13 +82,13 @@ final class DefaultLocationAdapter implements LocationAdapter {
     }
   };
 
-  DefaultLocationAdapter(Context context) {
+  DefaultPlayServiceAdapter(Context context) {
     this(context, new GoogleApiClient.Builder(context)
         .addApi(LocationServices.API)
         .build());
   }
 
-  @VisibleForTesting DefaultLocationAdapter(Context context, GoogleApiClient googleApiClient) {
+  @VisibleForTesting DefaultPlayServiceAdapter(Context context, GoogleApiClient googleApiClient) {
     this.context = context;
     this.mGoogleApiClient = googleApiClient;
   }

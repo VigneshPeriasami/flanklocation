@@ -17,71 +17,27 @@
 package com.github.vignesh_iopex.flanklocation;
 
 import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.github.vignesh_iopex.flanklocation.annotations.Periodic;
 import com.google.android.gms.location.LocationRequest;
-
-import java.lang.annotation.Annotation;
-
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 class DefaultActionFactory implements RequestorActionFactory {
 
-  @Override public RequestorAction forStart(Context context,
-                                            @NonNull Class<? extends FlankTask> clsFlankTask) {
-    return forStart(clsFlankTask, getDefaultPendingIntent(context, clsFlankTask));
-  }
-
-  @Override public RequestorAction forStart(@NonNull Class<? extends FlankTask> clsFlankTask,
-                                            @Nullable PendingIntent callback) {
-    return startPeriodicRequest(clsFlankTask, callback);
-  }
-
-  @Override public RequestorAction forStop(@NonNull PendingIntent callback) {
-    return stopPeriodicUpdates(callback);
-  }
-
-  @Override public RequestorAction forStop(Context context,
-                                           Class<? extends FlankTask> clsFlankTask) {
-    return forStop(getDefaultPendingIntent(context, clsFlankTask));
-  }
-
-  private PendingIntent getDefaultPendingIntent(Context context,
-                                                Class<? extends FlankTask> clsFlankTask) {
-    Intent callIntent = new Intent(context, clsFlankTask);
-    return PendingIntent.getService(context, 0, callIntent, FLAG_UPDATE_CURRENT);
-  }
-
-  private RequestorAction startPeriodicRequest(Class<? extends FlankTask> clsFlankTask,
-                                               final PendingIntent callback) {
-    LocationRequest locationRequest = extractLocationRequest(clsFlankTask);
+  @Override public RequestorAction getActionToStart(@NonNull LocationRequest locationRequest,
+                                                    @NonNull PendingIntent callback) {
     return new PeriodicStartAction(locationRequest, callback);
   }
 
-  private RequestorAction stopPeriodicUpdates(PendingIntent callback) {
+  @Override public RequestorAction getActionToOneShotStart(@NonNull PendingIntent callback) {
+    return new OneShotAction(callback);
+  }
+
+  @Override public RequestorAction getActionToStop(@NonNull PendingIntent callback) {
+    return stopPeriodicUpdates(callback);
+  }
+
+  private RequestorAction stopPeriodicUpdates(@NonNull PendingIntent callback) {
     return new StopAction(callback);
-  }
-
-  private LocationRequest extractLocationRequest(Class<? extends FlankTask> clsFlankTask) {
-    LocationRequest locationRequest = null;
-    for (Annotation annotation : clsFlankTask.getAnnotations()) {
-      if (annotation instanceof Periodic) {
-        locationRequest = extractLocationRequest((Periodic) annotation);
-      }
-    }
-    return locationRequest;
-  }
-
-  private LocationRequest extractLocationRequest(Periodic periodic) {
-    LocationRequest locationRequest = new LocationRequest();
-    locationRequest.setInterval(periodic.interval());
-    locationRequest.setFastestInterval(periodic.fastestInterval());
-    locationRequest.setPriority(periodic.priority());
-    return locationRequest;
   }
 
   private class StopAction implements RequestorAction {
@@ -107,6 +63,18 @@ class DefaultActionFactory implements RequestorActionFactory {
 
     @Override public void onLocationApiReady(LocationApiAdapter apiAdapter) {
       apiAdapter.requestUpdates(locationRequest, callback);
+    }
+  }
+
+  private class OneShotAction implements RequestorAction {
+    private final PendingIntent callback;
+
+    OneShotAction(PendingIntent callback) {
+      this.callback = callback;
+    }
+
+    @Override public void onLocationApiReady(LocationApiAdapter apiAdapter) {
+      apiAdapter.sendLastKnownLocation(callback);
     }
   }
 }

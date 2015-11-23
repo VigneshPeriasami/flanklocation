@@ -17,19 +17,15 @@
 package com.github.vignesh_iopex.flanklocation;
 
 import android.app.PendingIntent;
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.google.android.gms.location.LocationRequest;
 
 interface RequestorActionFactory {
-  RequestorAction forStart(Context context, @NonNull Class<? extends FlankTask> clsFlankTask);
+  RequestorAction getActionToStart(@NonNull LocationRequest locationRequest,
+                                   @NonNull PendingIntent callback);
 
-  RequestorAction forStart(@NonNull Class<? extends FlankTask> clsFlankTask,
-                           @Nullable PendingIntent callback);
+  RequestorAction getActionToOneShotStart(@NonNull PendingIntent callback);
 
-  RequestorAction forStop(@NonNull PendingIntent pendingIntent);
-
-  RequestorAction forStop(Context context, Class<? extends FlankTask> clsFlankTask);
+  RequestorAction getActionToStop(@NonNull PendingIntent pendingIntent);
 }

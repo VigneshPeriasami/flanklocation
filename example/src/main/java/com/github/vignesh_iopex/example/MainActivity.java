@@ -1,12 +1,9 @@
 package com.github.vignesh_iopex.example;
 
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Intent;
 import android.os.Bundle;
 
-import com.github.vignesh_iopex.flanklocation.Flank;
-import com.google.android.gms.location.LocationRequest;
+import com.github.vignesh_iopex.flanklocation.Recon;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -19,24 +16,11 @@ public class MainActivity extends Activity {
     ButterKnife.bind(this);
   }
 
-  private LocationRequest getLocationRequest() {
-    LocationRequest request = new LocationRequest();
-    request.setFastestInterval(3000);
-    request.setInterval(5000);
-    request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    return request;
-  }
-
-  private PendingIntent getLocationTaskIntent() {
-    return PendingIntent.getService(this, 0,
-        new Intent(this, BgTask.class), PendingIntent.FLAG_UPDATE_CURRENT);
-  }
-
   @OnClick(R.id.btn_locate) void locateMe() {
-    Flank.using(this).start(BgTask.class);
+    Recon.using(this).start(BgTask.class);
   }
 
   @OnClick(R.id.btn_stop) void stopUpdates() {
-    Flank.using(this).stop(BgTask.class);
+    Recon.using(this).stop(BgTask.class);
   }
 }

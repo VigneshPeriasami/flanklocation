@@ -16,7 +16,7 @@
  */
 package com.github.vignesh_iopex.flanklocation;
 
-interface LocationAdapter {
+interface PlayServiceAdapter {
   void connect();
 
   boolean isConnected();

@@ -20,30 +20,30 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.VisibleForTesting;
 
-public final class ApiConnector extends IntentService {
+public final class ConnectorService extends IntentService {
   private final ActionQueue actionQueue;
-  private LocationAdapter locationAdapter;
+  private PlayServiceAdapter playServiceAdapter;
 
-  public ApiConnector() {
+  public ConnectorService() {
     this("FlankLocationService", ActionQueue.DEFAULT_QUEUE);
   }
 
-  @VisibleForTesting ApiConnector(String name, ActionQueue actionQueue) {
+  @VisibleForTesting ConnectorService(String name, ActionQueue actionQueue) {
     super(name);
     this.actionQueue = actionQueue;
   }
 
   @Override protected void onHandleIntent(Intent intent) {
-    if (locationAdapter == null)
-      locationAdapter = new DefaultLocationAdapter(this);
-    if (!locationAdapter.isConnected())
-      locationAdapter.connect();
-    actionQueue.informAll(locationAdapter);
+    if (playServiceAdapter == null)
+      playServiceAdapter = new DefaultPlayServiceAdapter(this);
+    if (!playServiceAdapter.isConnected())
+      playServiceAdapter.connect();
+    actionQueue.informAll(playServiceAdapter);
   }
 
   @Override public void onDestroy() {
-    if (locationAdapter != null)
-      locationAdapter.disconnect();
+    if (playServiceAdapter != null)
+      playServiceAdapter.disconnect();
     super.onDestroy();
   }
 }
