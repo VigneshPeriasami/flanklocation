@@ -18,19 +18,23 @@ package com.github.vignesh_iopex.flanklocation;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.location.Location;
 import android.support.annotation.Nullable;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationResult;
 
+import java.util.Collections;
+
+import static com.google.android.gms.location.FusedLocationProviderApi.KEY_LOCATION_CHANGED;
 import static com.google.android.gms.location.LocationAvailability.extractLocationAvailability;
 
 /**
  * Use this class to cleanly listen to the location updates.
  */
 public abstract class ReconTask extends IntentService {
-  private static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
+  static final String EXTRAS_CONNECTION_RESULT = "extras_connection_result";
   private Intent intent;
 
   public ReconTask(String name) {
@@ -52,8 +56,12 @@ public abstract class ReconTask extends IntentService {
     }
 
     LocationAvailability locationAvailability = extractLocationAvailability(intent);
-    if (locationAvailability.isLocationAvailable()) {
+    Location location = intent.getParcelableExtra(KEY_LOCATION_CHANGED);
+
+    if (locationAvailability != null && locationAvailability.isLocationAvailable()) {
       onNextLocation(LocationResult.extractResult(intent));
+    } else if (location != null) {
+      onNextLocation(LocationResult.create(Collections.singletonList(location)));
     } else {
       onNextLocation(null);
     }
