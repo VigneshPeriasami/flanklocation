@@ -13,6 +13,11 @@ public class ReconExample extends ReconTask {
     super("ExampleRecon");
   }
 
+  /** starts registering for location updates */
+  public static void start(Context context) {
+    Recon.using(context).start(ReconExample.class);
+  }
+
   protected onNextLocation(LocationResult locationResult) {
     // do something with location result
   }
@@ -22,6 +27,7 @@ public class ReconExample extends ReconTask {
   }
 }
 ```
+
 
 **Note:** This library is not ready for production use it at your own risk.
 
