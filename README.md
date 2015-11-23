@@ -1,10 +1,13 @@
 Flank Location
 ==============
-Android location api wrapper. Using `FlankService` as a callback PendingIntent would
-give clean access to Google location API locations and errors.
+A simple API that cleanly registers pending intent for location updates from Google location api.
+
+Using `Recon` and `FlankLocation` annotation the location update registration using pending
+intent is made easier, This still supports dynamic location request at runtime by accepting it as
+parameter when registering for location updates.
 
 Usage
----------
+------
 
 ```java
 @FlankLocation(interval = 3000, fastestInterval = 2000, priority = PRIORITY_HIGH_ACCURACY)
