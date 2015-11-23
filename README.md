@@ -5,6 +5,22 @@ give clean access to Google location API locations and errors.
 
 **Note:** This library is not ready for production use it at your own risk.
 
+Download
+--------
+
+Download via maven:
+```xml
+<dependency>
+    <groupId>com.github.vignesh-iopex</groupId>
+    <artifactId>flanklocation</artifactId>
+    <version>0.9</version>
+</dependency>
+```
+or Gradle:
+```groovy
+compile 'com.github.vignesh-iopex:flanklocation:0.9'
+```
+
 License
 -------
 
