@@ -1,5 +1,6 @@
 Flank Location
 ==============
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Flank%20Location-green.svg?style=true)](https://android-arsenal.com/details/1/2832)
 A simple API that cleanly registers pending intent for location updates from Google location api.
 
 Using `Recon` and `FlankLocation` annotation the location update registration using pending
