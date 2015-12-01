@@ -31,8 +31,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile libraries.androidV7Support
+    compile libraries.googlePlayLocationServices
+
     compile libraries.butterknife
     compile project(':flanklocation')
-
-    testCompile libraries.junit
 }
