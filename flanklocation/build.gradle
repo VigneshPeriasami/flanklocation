@@ -34,7 +34,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     provided libraries.androidV7Support
-    compile libraries.googlePlayLocationServices
+    provided libraries.googlePlayLocationServices
 
     testCompile libraries.junit
     testCompile libraries.robolectric
